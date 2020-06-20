@@ -9,8 +9,10 @@ package frc.robot.commands;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.RobotMap;
+import frc.robot.Sensors.NAVX;
 import frc.robot.Tools.controlLoops.PID;
 
 public class Turn90 extends CommandBase {
@@ -20,32 +22,37 @@ public class Turn90 extends CommandBase {
 
   private PID pid;
 
-  private final double kP = 0.01;
-  private final double kI = 0;
-  private final double kD = 0;
+  private final double kP = 0.014;
+  private final double kI = 0.00035;
+  private final double kD = 0.01;
 
-  
+  private NAVX navx;
+
   private double originalAngle;
 
-  public Turn90(double firstAngle) {
+  public Turn90() {
     // Use addRequirements() here to declare subsystem dependencies.
-    originalAngle = firstAngle;
+    //originalAngle = firstAngle;
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    navx = new NAVX(RobotMap.ahrs);
+    navx.softResetAngle();
     pid = new PID(kP, kI, kD);
-    pid.setSetPoint(90);
-    pid.setMinOutput(-0.25);
-    pid.setMaxOutput(0.25);
+    pid.setSetPoint(180);
+    pid.setMinOutput(-0.75);
+    pid.setMaxOutput(0.75);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    pid.updatePID(RobotMap.ahrs.getAngle());
-    System.out.println("Get result" + pid.getResult());
+    pid.updatePID(navx.currentAngle());
+    SmartDashboard.putNumber("OriginalAngle", originalAngle);
+    SmartDashboard.putNumber("Navx Angle", navx.currentAngle());
+    SmartDashboard.putNumber("Get result", pid.getResult());
     RobotMap.rightMaster.set(ControlMode.PercentOutput, pid.getResult());
     RobotMap.leftMaster.set(ControlMode.PercentOutput, -pid.getResult());
   }
@@ -60,7 +67,8 @@ public class Turn90 extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if(Math.abs(RobotMap.ahrs.getAngle() - 90) <= 0.5) {
+    if(Math.abs(navx.currentAngle() - 180) <= 0.25) {
+      SmartDashboard.putBoolean("Finished", true);
       return true;
     }
     return false;

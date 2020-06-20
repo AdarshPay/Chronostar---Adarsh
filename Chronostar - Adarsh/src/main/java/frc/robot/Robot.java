@@ -32,7 +32,6 @@ public class Robot extends TimedRobot {
 
   //private DriveForward driveForward = new DriveForward(0.2, 2);
 
-  private ForwardBack forwardBack = new ForwardBack();
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -55,7 +54,12 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    System.out.println(RobotMap.rightMaster.getSelectedSensorPosition(0));
+    SmartDashboard.putNumber("LeftEncTicks", RobotMap.leftMaster.getSelectedSensorPosition());
+    SmartDashboard.putNumber("RightEncTicks", RobotMap.rightMaster.getSelectedSensorPosition());
+    SmartDashboard.putNumber("Percent output", RobotMap.rightMaster.getMotorOutputPercent());
+    double inchesMoved = (RobotMap.rightMaster.getSelectedSensorPosition(0) * 6 * Math.PI)/11264;
+    SmartDashboard.putNumber("Distance moved", (inchesMoved));
+    SmartDashboard.putNumber("motorVelocity", RobotMap.leftMaster.getSelectedSensorVelocity());
     // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
     // commands, running already-scheduled commands, removing finished or interrupted commands,
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
@@ -79,12 +83,13 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
+    DriveForward driveForward = new DriveForward(120);
+    driveForward.schedule();
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
 
-    forwardBack.schedule();
 
   }
 
@@ -116,25 +121,20 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     RobotMap.driveTrain.telopPeriodic();
-    SmartDashboard.putNumber("LeftEncTicks", RobotMap.leftMaster.getSelectedSensorPosition());
-    SmartDashboard.putNumber("RightEncTicks", RobotMap.rightMaster.getSelectedSensorPosition());
-    //System.out.println(RobotMap.ahrs.getAngle());
-
+    
+    //SmartDashboard.putNumber("Get result", pid.getResult());
     
     double currentAngle = RobotMap.ahrs.getAngle();
 
     if(OI.driverController.getAButtonPressed()) {
-      Turn90 turning90 = new Turn90(RobotMap.ahrs.getAngle());
+      
+      Turn90 turning90 = new Turn90();
       turning90.schedule();
     }
 
-    if(OI.driverController.getBButtonPressed()) {
-      double targetPos = (3 * 2048 * 6 * Math.PI)/12;
-      RobotMap.rightMaster.set(TalonFXControlMode.MotionMagic, targetPos);
-      RobotMap.leftMaster.set(TalonFXControlMode.MotionMagic, targetPos);
-      DriveForward driveForward = new DriveForward(0.1, 3);
-      driveForward.schedule();
-    }
+    //if(OI.driverController.getBButtonPressed()) {
+      
+    //}
 
   }
 
