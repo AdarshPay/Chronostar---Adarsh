@@ -10,12 +10,16 @@ package frc.robot;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 
+import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Relay.Value;
+import edu.wpi.first.wpilibj.SerialPort.Port;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.RobotMap;
+import frc.robot.Sensors.VisionCamera;
 import frc.robot.commands.DriveForward;
 import frc.robot.commands.ForwardBack;
 import frc.robot.commands.Turn90;
@@ -29,6 +33,9 @@ import frc.robot.commands.Turn90;
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
+  public static SerialPort serialPort = new SerialPort(115200, Port.kUSB1);
+
+  public static VisionCamera camera = new VisionCamera(serialPort);
 
   //private DriveForward driveForward = new DriveForward(0.2, 2);
 
@@ -60,6 +67,10 @@ public class Robot extends TimedRobot {
     double inchesMoved = (RobotMap.rightMaster.getSelectedSensorPosition(0) * 6 * Math.PI)/11264;
     SmartDashboard.putNumber("Distance moved", (inchesMoved));
     SmartDashboard.putNumber("motorVelocity", RobotMap.leftMaster.getSelectedSensorVelocity());
+
+    SmartDashboard.putNumber("JevoisAngle", camera.getAngle());
+    SmartDashboard.putNumber("JevoisDistance", camera.getDistance());
+
     // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
     // commands, running already-scheduled commands, removing finished or interrupted commands,
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
@@ -120,6 +131,9 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
+    
+    
+
     RobotMap.driveTrain.telopPeriodic();
     
     //SmartDashboard.putNumber("Get result", pid.getResult());
@@ -130,6 +144,13 @@ public class Robot extends TimedRobot {
       
       Turn90 turning90 = new Turn90();
       turning90.schedule();
+    }
+
+    if(OI.driverController.getXButton()) {
+      RobotMap.visionRelay1.set(Value.kReverse);
+    }
+    else {
+      RobotMap.visionRelay1.set(Value.kForward);
     }
 
     //if(OI.driverController.getBButtonPressed()) {
