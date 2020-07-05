@@ -33,9 +33,10 @@ import frc.robot.commands.Turn90;
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
-  public static SerialPort serialPort = new SerialPort(115200, Port.kUSB1);
-
-  public static VisionCamera camera = new VisionCamera(serialPort);
+  public static SerialPort jevois1;
+  public static VisionCamera camera;
+  public static boolean hasCamera = true;
+  
 
   //private DriveForward driveForward = new DriveForward(0.2, 2);
 
@@ -46,6 +47,15 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    try {
+			jevois1 = new SerialPort(115200, Port.kUSB);
+
+		} catch (Exception e) {
+			hasCamera = false;
+		}
+    camera= new VisionCamera(Robot.jevois1);
+    
+
     
     RobotConfig.setStartingConfig();
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
@@ -61,6 +71,12 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    if(jevois1.getBytesReceived()>2){
+      hasCamera = true;
+    }
+    else{
+      hasCamera = false;
+    }
     SmartDashboard.putNumber("LeftEncTicks", RobotMap.leftMaster.getSelectedSensorPosition());
     SmartDashboard.putNumber("RightEncTicks", RobotMap.rightMaster.getSelectedSensorPosition());
     SmartDashboard.putNumber("Percent output", RobotMap.rightMaster.getMotorOutputPercent());
@@ -68,8 +84,15 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Distance moved", (inchesMoved));
     SmartDashboard.putNumber("motorVelocity", RobotMap.leftMaster.getSelectedSensorVelocity());
 
-    SmartDashboard.putNumber("JevoisAngle", camera.getAngle());
-    SmartDashboard.putNumber("JevoisDistance", camera.getDistance());
+    SmartDashboard.putBoolean("HasCamera", hasCamera);
+
+    camera.updateVision();
+		//SmartDashboard.putNumber("ultraSonic2", RobotMap.mainUltrasonicSensor2.getDistance());
+		SmartDashboard.putNumber("cambytes", jevois1.getBytesReceived());
+		SmartDashboard.putString("visionString", camera.getString());
+		SmartDashboard.putNumber("visionAngle", camera.getAngle());
+
+    
 
     // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
     // commands, running already-scheduled commands, removing finished or interrupted commands,
