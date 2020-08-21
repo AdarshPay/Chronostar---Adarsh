@@ -6,6 +6,8 @@ import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.TalonSRXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
+import frc.robot.subsystems.DriveTrain;
+
 public class RobotConfig {
     public RobotConfig() {
 
@@ -13,6 +15,8 @@ public class RobotConfig {
     // adarsh has no thumbs
 
     public static void setStartingConfig() {
+
+        DriveTrain.initVPID();
    
         RobotMap.leftMaster.configSelectedFeedbackSensor(TalonSRXFeedbackDevice.CTRE_MagEncoder_Relative,0,0);
         RobotMap.rightMaster.configSelectedFeedbackSensor(TalonSRXFeedbackDevice.CTRE_MagEncoder_Relative,0,0);

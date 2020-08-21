@@ -49,11 +49,11 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     try {
 			jevois1 = new SerialPort(115200, Port.kUSB);
-
+      camera= new VisionCamera(Robot.jevois1);
 		} catch (Exception e) {
 			hasCamera = false;
 		}
-    camera= new VisionCamera(Robot.jevois1);
+    
     
 
     
@@ -71,12 +71,25 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    if(jevois1.getBytesReceived()>2){
-      hasCamera = true;
+    try {
+      if(jevois1.getBytesReceived()>2){
+        hasCamera = true;
+      }
+      else{
+        hasCamera = false;
+      }
+      camera.updateVision();
     }
-    else{
+    catch(Exception e) {
       hasCamera = false;
     }
+    try {
+      SmartDashboard.putNumber("timesinceLast", camera.lastParseTime);
+    }
+    catch(Exception e) {
+      
+    }
+    
     SmartDashboard.putNumber("LeftEncTicks", RobotMap.leftMaster.getSelectedSensorPosition());
     SmartDashboard.putNumber("RightEncTicks", RobotMap.rightMaster.getSelectedSensorPosition());
     SmartDashboard.putNumber("Percent output", RobotMap.rightMaster.getMotorOutputPercent());
@@ -84,13 +97,17 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Distance moved", (inchesMoved));
     SmartDashboard.putNumber("motorVelocity", RobotMap.leftMaster.getSelectedSensorVelocity());
 
-    SmartDashboard.putBoolean("HasCamera", hasCamera);
+    //SmartDashboard.putBoolean("HasCamera", hasCamera);
+    try{
+      camera.updateVision();
+      SmartDashboard.putNumber("cambytes", jevois1.getBytesReceived());
+      SmartDashboard.putString("visionString", camera.getString());
+      //SmartDashboard.putNumber("visionAngle", camera.getAngle());
+    }
+    catch(Exception e) {
 
-    camera.updateVision();
-		//SmartDashboard.putNumber("ultraSonic2", RobotMap.mainUltrasonicSensor2.getDistance());
-		SmartDashboard.putNumber("cambytes", jevois1.getBytesReceived());
-		SmartDashboard.putString("visionString", camera.getString());
-		SmartDashboard.putNumber("visionAngle", camera.getAngle());
+    }
+    
 
     
 
@@ -117,8 +134,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    DriveForward driveForward = new DriveForward(120);
-    driveForward.schedule();
+    //DriveForward driveForward = new DriveForward(120);
+    //driveForward.schedule();
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
@@ -154,31 +171,18 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    
-    
-
     RobotMap.driveTrain.telopPeriodic();
-    
-    //SmartDashboard.putNumber("Get result", pid.getResult());
-    
-    double currentAngle = RobotMap.ahrs.getAngle();
-
-    if(OI.driverController.getAButtonPressed()) {
-      
+    if(ButtonMap.xButtonPressed()) {
+      //SmartDashboard.putNumber("cameraAngle", camera.getAngle());
       Turn90 turning90 = new Turn90();
       turning90.schedule();
     }
-
-    if(OI.driverController.getXButton()) {
-      RobotMap.visionRelay1.set(Value.kReverse);
-    }
-    else {
-      RobotMap.visionRelay1.set(Value.kForward);
-    }
-
-    //if(OI.driverController.getBButtonPressed()) {
-      
+    //if(ButtonMap.aButtonPressed()) {
+      //DriveTrain.setLeftSpeed(3);
+      //DriveTrain.setRightSpeed(-3);
     //}
+    //DriveTrain.setLeftSpeed(-3);
+    //DriveTrain.setRightSpeed(3);
 
   }
 

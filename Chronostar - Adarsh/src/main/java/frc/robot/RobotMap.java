@@ -1,12 +1,14 @@
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.SerialPort;
-
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.commands.DriveForward;
 import frc.robot.subsystems.DriveTrain;
 
 public class RobotMap{
@@ -44,5 +46,35 @@ public class RobotMap{
       RobotMap.leftMaster,
       RobotMap.rightMaster,  
     };
+
+    public static final double kF = 0.153;
+    public static final double kP = 0.35025;
+    //public static final double kF = 0;
+    //public static final double kP = 0;
+    public static final double kI = 0;
+    public static final double kD = 0;
+    public static final int pidSlot = 0;
+    private static double targetVelocityTics;
+
+    public static double ticsToInches(double encoderTics) {
+      double inches = (encoderTics * 6 * Math.PI)/11264;
+      return inches;
+    }
+  
+    public static int inchesToTics(double inches) {
+      int encoderTics = (int) Math.round((inches * 11264) / 6);
+      encoderTics = (int) Math.round(encoderTics/Math.PI);
+      return encoderTics;
+    }
+
+    public static double ftPerSecToNIPer100ms(double feetPerSecond) {
+      return((((feetPerSecond*12)/10)/(6*Math.PI)) * 11264);
+    }
+
+    
+
+    public static void setCameraAPID() {
+
+    }
 
 }
